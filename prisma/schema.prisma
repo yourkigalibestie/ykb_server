@@ -1,0 +1,333 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../node_modules/.prisma/client"
+  engineType = "library"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  PROVIDER
+  CUSTOMER
+}
+
+enum ProviderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProcessor {
+  FLUTTERWAVE
+}
+
+enum RequestStatus {
+  PENDING
+  IN_REVIEW
+  RESOLVED
+  CANCELLED
+}
+
+enum StarterGuideCategoryGroup {
+  APP
+  INFRASTRUCTURE
+  OTHERS
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  phone        String?  @unique
+  name         String
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+
+  provider Provider?
+
+  bookings Booking[] @relation("CustomerBookings")
+  requests Request[]
+  reviews  Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Provider {
+  id                    String         @id @default(uuid())
+  userId                String         @unique
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status                ProviderStatus @default(PENDING)
+  rejectionReason       String?
+  businessName           String?
+  mainService            String?
+  location               String?
+  moneyRange             String?
+  serviceOfferings       Json?
+  bio                   String?
+  profileImageUrl       String?
+  profileImagePublicId  String?
+
+  services Service[]
+  bookings Booking[] @relation("ProviderBookings")
+  reviews  Review[]
+  requests Request[]
+  subscriptions Subscription[] @relation("ProviderSubscriptions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceCategory {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  services  Service[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  basePrice       Decimal  @db.Decimal(12, 2)
+  currency        String   @default("RWF")
+  isPlatformOwned Boolean  @default(false)
+
+  providerId String?
+  provider   Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  categoryId String
+  category   ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  images   ServiceImage[]
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerId])
+  @@index([categoryId])
+}
+
+model ServiceImage {
+  id        String   @id @default(uuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  url       String
+  publicId  String
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id         String        @id @default(uuid())
+  customerId String
+  customer   User          @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Restrict)
+
+  providerId String?
+  provider   Provider?     @relation("ProviderBookings", fields: [providerId], references: [id], onDelete: SetNull)
+
+  serviceId   String
+  service     Service      @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  scheduledAt DateTime
+  location    String
+  notes       String?
+  status      BookingStatus @default(PENDING)
+
+  payment Payment?
+  review  Review?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([providerId])
+  @@index([serviceId])
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  bookingId          String          @unique
+  booking            Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount             Decimal         @db.Decimal(12, 2)
+  platformFee        Decimal         @db.Decimal(12, 2)
+  currency           String          @default("RWF")
+  status             PaymentStatus   @default(PENDING)
+  processor          PaymentProcessor?
+  processorReference String?
+  processorPayload   Json?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+}
+
+model Request {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  description   String
+  location      String
+  preferredDate DateTime?
+  budget        Decimal?      @db.Decimal(12, 2)
+  status        RequestStatus @default(PENDING)
+  adminNotes    String?
+  customerNotes String?
+  
+  providerId    String?
+  provider      Provider?     @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  
+  customerResolvedAt DateTime?
+  providerResolvedAt DateTime?
+  adminResolvedAt DateTime?
+  adminConfirmedAt DateTime?
+  requiresAdminConfirmation Boolean @default(false)
+  
+  rating        Int?
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([providerId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  providerId String
+  provider  Provider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerId])
+}
+
+model Plan {
+  id        String   @id @default(uuid())
+  title     String
+  features  Json     // Array of feature strings
+  feeRwf    Decimal  @db.Decimal(12, 2)
+  feeUsd    Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  subscriptions Subscription[]
+
+  @@index([title])
+}
+
+model Subscription {
+  id                  String                @id @default(uuid())
+  providerId          String
+  provider            Provider              @relation("ProviderSubscriptions", fields: [providerId], references: [id], onDelete: Cascade)
+  planId              String
+  plan                Plan                  @relation(fields: [planId], references: [id], onDelete: Restrict)
+  currency            String                @default("RWF")
+  amount              Decimal               @db.Decimal(12, 2)
+  status              SubscriptionStatus    @default(PENDING)
+  paymentMethod       String?               // 'card' or 'mobileMoney'
+  pesapalOrderTrackingId String?
+  pesapalMerchantReference String?
+  pesapalStatus       String?
+  paymentDetails      Json?
+  startDate           DateTime?
+  endDate             DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@index([providerId])
+  @@index([planId])
+  @@index([status])
+}
+
+// Simple service definitions for the marketing/UI list.
+// This is intentionally minimal (title + description) and uses a serial integer ID.
+model PublicService {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String
+  imageUrl      String?
+  imagePublicId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("services")
+}
+
+model Language {
+  id        Int      @id @default(autoincrement())
+  title     String   @unique
+  prices    Json
+  translators TranslatorLanguage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("languages")
+}
+
+model Translator {
+  id                   Int      @id @default(autoincrement())
+  name                 String
+  email                String   @unique
+  phone                String
+  profileImageUrl      String?
+  profileImagePublicId String?
+  languages            TranslatorLanguage[]
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("translators")
+}
+
+model TranslatorLanguage {
+  translatorId Int
+  languageId   Int
+  translator   Translator @relation(fields: [translatorId], references: [id], onDelete: Cascade)
+  language     Language   @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@id([translatorId, languageId])
+  @@index([languageId])
+  @@map("translator_languages")
+}
+
+model StarterGuideCategory {
+  id            Int      @id @default(autoincrement())
+  category      String   @unique
+  group         StarterGuideCategoryGroup @default(OTHERS)
+  subcategories Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("starter_guide_categories")
+}
