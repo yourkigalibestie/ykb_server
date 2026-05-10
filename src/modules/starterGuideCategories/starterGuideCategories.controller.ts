@@ -3,9 +3,11 @@ import { asyncHandler } from '../../utils/asyncHandler';
 import { starterGuideCategoriesService } from './starterGuideCategories.service';
 
 export const starterGuideCategoriesController = {
-    list: asyncHandler(async (_req: Request, res: Response) => {
-        const categories = await starterGuideCategoriesService.list();
-        res.status(200).json({ categories });
+    list: asyncHandler(async (req: Request, res: Response) => {
+        const isStarterKit = req.query.isStarterKit ? req.query.isStarterKit === 'true' : undefined;
+        const filters = isStarterKit !== undefined ? { isStarterKit } : undefined;
+        const categories = await starterGuideCategoriesService.list(filters);
+        res.status(200).json(categories);
     }),
 
     create: asyncHandler(async (req: Request, res: Response) => {

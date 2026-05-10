@@ -58,6 +58,16 @@ export class SubscriptionsRepository {
     });
   }
 
+  static async getByOrderTrackingId(orderTrackingId: string) {
+    return prisma.subscription.findFirst({
+      where: { pesapalOrderTrackingId: orderTrackingId },
+      include: {
+        plan: true,
+        provider: true,
+      },
+    });
+  }
+
   static async update(id: string, data: UpdateSubscriptionInput) {
     return prisma.subscription.update({
       where: { id },

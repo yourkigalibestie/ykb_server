@@ -28,16 +28,25 @@ const normalizeGroup = (group: StarterGuideCategoryGroup | undefined): StarterGu
 };
 
 export const starterGuideCategoriesService = {
-    list: async () => {
+    list: async (filters?: { isStarterKit?: boolean }) => {
         try {
-            return await starterGuideCategoriesRepository.list();
+            return await starterGuideCategoriesRepository.list(filters);
         } catch (err) {
             if (isDbUnreachable(err)) return [];
             throw err;
         }
     },
 
-    create: async (input: { category: string; group?: StarterGuideCategoryGroup; subcategories?: StarterGuideSubcategories }) => {
+    create: async (input: {
+        category: string;
+        group?: StarterGuideCategoryGroup;
+        subcategories?: StarterGuideSubcategories;
+        description?: string;
+        imageUrl?: string;
+        imagePublicId?: string;
+        isStarterKit?: boolean;
+        allowProviderRegistration?: boolean;
+    }) => {
         try {
             const category = input.category.trim();
             const group = normalizeGroup(input.group);
@@ -45,7 +54,12 @@ export const starterGuideCategoriesService = {
             return await starterGuideCategoriesRepository.create({
                 category,
                 group,
-                subcategories: subcategories.length > 0 ? subcategories : []
+                subcategories: subcategories.length > 0 ? subcategories : [],
+                description: input.description?.trim() || null,
+                imageUrl: input.imageUrl?.trim() || null,
+                imagePublicId: input.imagePublicId?.trim() || null,
+                isStarterKit: input.isStarterKit ?? true,
+                allowProviderRegistration: input.allowProviderRegistration ?? false
             });
         } catch (err) {
             if (isDbUnreachable(err)) {
@@ -57,16 +71,30 @@ export const starterGuideCategoriesService = {
 
     update: async (
         id: number,
-        input: { category?: string; group?: StarterGuideCategoryGroup; subcategories?: StarterGuideSubcategories }
+        input: {
+            category?: string;
+            group?: StarterGuideCategoryGroup;
+            subcategories?: StarterGuideSubcategories;
+            description?: string;
+            imageUrl?: string;
+            imagePublicId?: string;
+            isStarterKit?: boolean;
+            allowProviderRegistration?: boolean;
+        }
     ) => {
         try {
             const existing = await starterGuideCategoriesRepository.findById(id);
             if (!existing) throw new AppError('Starter guide category not found', 404, 'NOT_FOUND');
 
-            const data: { category?: string; group?: StarterGuideCategoryGroup; subcategories?: StarterGuideSubcategories } = {};
+            const data: any = {};
             if (typeof input.category === 'string') data.category = input.category.trim();
             if (typeof input.group === 'string') data.group = input.group;
             if (input.subcategories) data.subcategories = normalizeSubcategories(input.subcategories);
+            if (typeof input.description === 'string') data.description = input.description.trim() || null;
+            if (typeof input.imageUrl === 'string') data.imageUrl = input.imageUrl.trim() || null;
+            if (typeof input.imagePublicId === 'string') data.imagePublicId = input.imagePublicId.trim() || null;
+            if (typeof input.isStarterKit === 'boolean') data.isStarterKit = input.isStarterKit;
+            if (typeof input.allowProviderRegistration === 'boolean') data.allowProviderRegistration = input.allowProviderRegistration;
 
             return await starterGuideCategoriesRepository.updateById(id, data);
         } catch (err) {

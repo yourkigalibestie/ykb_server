@@ -23,6 +23,12 @@ export type SubscriptionDTO = {
   id: string;
   providerId: string;
   planId: string;
+  plan?: {
+    id: string;
+    title: string;
+    feeRwf: number;
+    feeUsd: number;
+  };
   currency: string;
   amount: number;
   status: string;

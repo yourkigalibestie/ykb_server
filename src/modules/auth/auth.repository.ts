@@ -11,6 +11,14 @@ export const authRepository = {
         return prisma.user.findUnique({ where: { id } });
     },
 
+    findUserByResetToken: async (token: string): Promise<User | null> => {
+        return prisma.user.findUnique({ where: { passwordResetToken: token } });
+    },
+
+    findUserByVerificationToken: async (token: string): Promise<User | null> => {
+        return prisma.user.findUnique({ where: { emailVerificationToken: token } });
+    },
+
     createUser: async (data: {
         email: string;
         phone?: string;
@@ -21,7 +29,7 @@ export const authRepository = {
         return prisma.user.create({ data });
     },
 
-    createProviderForUser: async (userId: string) => {
-        return prisma.provider.create({ data: { userId } });
+    updateUser: async (id: string, data: Partial<User>): Promise<User> => {
+        return prisma.user.update({ where: { id }, data });
     }
 };

@@ -56,7 +56,18 @@ subscriptionsRouter.delete(
   subscriptionsController.cancel
 );
 
-// Pesapal callback (public - should be secured with signature verification)
+// Check payment status
+subscriptionsRouter.get(
+  '/status/check',
+  subscriptionsController.checkPaymentStatus
+);
+
+// Pesapal callback (accepts both GET and POST - public, should be secured with signature verification)
+subscriptionsRouter.get(
+  '/callback/pesapal',
+  subscriptionsController.pesapalCallback
+);
+
 subscriptionsRouter.post(
   '/callback/pesapal',
   subscriptionsController.pesapalCallback

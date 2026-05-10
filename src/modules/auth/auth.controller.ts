@@ -18,5 +18,29 @@ export const authController = {
     me: asyncHandler(async (req: Request, res: Response) => {
         const result = await authService.me(req.auth!.userId);
         res.status(200).json({ user: result });
+    }),
+
+    forgotPassword: asyncHandler(async (req: Request, res: Response) => {
+        const { email } = req.validated?.body;
+        await authService.requestPasswordReset(email);
+        res.status(200).json({ message: 'If an account exists, a reset link has been sent.' });
+    }),
+
+    resetPassword: asyncHandler(async (req: Request, res: Response) => {
+        const { token, password } = req.validated?.body;
+        await authService.resetPassword(token, password);
+        res.status(200).json({ message: 'Password reset successfully.' });
+    }),
+
+    sendVerification: asyncHandler(async (req: Request, res: Response) => {
+        const { email } = req.validated?.body;
+        await authService.sendVerificationEmail(email);
+        res.status(200).json({ message: 'Verification code sent.' });
+    }),
+
+    verifyEmail: asyncHandler(async (req: Request, res: Response) => {
+        const { email, code } = req.validated?.body;
+        await authService.verifyEmail(email, code);
+        res.status(200).json({ message: 'Email verified successfully.' });
     })
 };

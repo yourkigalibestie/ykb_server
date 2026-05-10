@@ -58,6 +58,7 @@ type SubmitOrderInput = {
     first_name?: string;
     last_name?: string;
   };
+  payment_method?: string; // e.g., 'MOBILE_MONEY', 'MTN', 'AIRTEL', 'CARD'
 };
 
 type SubmitOrderResult = {
