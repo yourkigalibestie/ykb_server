@@ -31,5 +31,28 @@ export const authRepository = {
 
     updateUser: async (id: string, data: Partial<User>): Promise<User> => {
         return prisma.user.update({ where: { id }, data });
+    },
+
+    upsertEmailVerificationRequest: async (email: string, code: string, expiresAt: Date) => {
+        return prisma.emailVerificationRequest.upsert({
+            where: { email },
+            create: { email, code, expiresAt },
+            update: { code, expiresAt, verifiedAt: null }
+        });
+    },
+
+    findEmailVerificationRequest: async (email: string) => {
+        return prisma.emailVerificationRequest.findUnique({ where: { email } });
+    },
+
+    markEmailVerificationRequestVerified: async (email: string) => {
+        return prisma.emailVerificationRequest.update({
+            where: { email },
+            data: { verifiedAt: new Date() }
+        });
+    },
+
+    deleteEmailVerificationRequest: async (email: string) => {
+        return prisma.emailVerificationRequest.delete({ where: { email } });
     }
 };

@@ -25,13 +25,29 @@ export function buildVerificationEmail(name: string, code: string) {
   `;
 }
 
-export function buildPasswordResetEmail(name: string, resetUrl: string) {
+export function buildPasswordResetEmail(name: string, codeOrUrl: string) {
+    // Check if it's a code (6 chars hex) or URL
+    const isCode = codeOrUrl.length === 6 && /^[A-F0-9]+$/.test(codeOrUrl);
+    
+    if (isCode) {
+        return `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <h2 style="color: #1f2937;">Reset your password</h2>
+          <p>Hi ${name},</p>
+          <p>Your password reset code is:</p>
+          <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; background: #f3f4f6; padding: 16px; text-align: center; border-radius: 6px; margin: 16px 0;">${codeOrUrl}</div>
+          <p style="color: #6b7280; font-size: 12px;">This code will expire in 15 minutes. If you didn't request this, you can ignore this email.</p>
+        </div>
+      `;
+    }
+    
+    // Fallback to URL-based reset (legacy)
     return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px;">
       <h2 style="color: #1f2937;">Reset your password</h2>
       <p>Hi ${name},</p>
       <p>Click the link below to reset your password:</p>
-      <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #d4af37; color: #1f2937; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 16px 0;">Reset Password</a>
+      <a href="${codeOrUrl}" style="display: inline-block; padding: 12px 24px; background: #d4af37; color: #1f2937; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 16px 0;">Reset Password</a>
       <p style="color: #6b7280; font-size: 12px;">This link will expire in 1 hour. If you didn't request this, you can ignore this email.</p>
     </div>
   `;

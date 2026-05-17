@@ -11,6 +11,13 @@ const isPrismaInitError = (err: unknown): err is Prisma.PrismaClientInitializati
     return err instanceof Prisma.PrismaClientInitializationError;
 };
 
+const prismaUniqueTarget = (meta: unknown): string[] => {
+    const target = (meta as any)?.target;
+    if (Array.isArray(target)) return target.filter((t) => typeof t === 'string') as string[];
+    if (typeof target === 'string') return [target];
+    return [];
+};
+
 export const errorHandler = (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     // Log full error for debugging in development
     // eslint-disable-next-line no-console
@@ -28,10 +35,17 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
 
     if (isPrismaKnownError(err)) {
         if (err.code === 'P2002') {
+            const targets = prismaUniqueTarget(err.meta);
+            const message =
+                targets.includes('email')
+                    ? 'Email already in use'
+                    : targets.includes('phone')
+                      ? 'Phone already in use'
+                      : 'Unique constraint violation';
             return res.status(409).json({
                 error: {
                     code: 'CONFLICT',
-                    message: 'Unique constraint violation',
+                    message,
                     details: err.meta
                 }
             });

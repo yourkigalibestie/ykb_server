@@ -65,6 +65,27 @@ export const resetPasswordSchema = z.object({
     })
 });
 
+export const sendResetCodeSchema = z.object({
+    body: z.object({
+        email: z.string().email()
+    })
+});
+
+export const verifyResetCodeSchema = z.object({
+    body: z.object({
+        email: z.string().email(),
+        code: z.string().min(1).max(10)
+    })
+});
+
+export const resetPasswordWithCodeSchema = z.object({
+    body: z.object({
+        email: z.string().email(),
+        code: z.string().min(1).max(10),
+        password: z.string().min(8).max(200)
+    })
+});
+
 export const sendVerificationSchema = z.object({
     body: z.object({
         email: z.string().email()

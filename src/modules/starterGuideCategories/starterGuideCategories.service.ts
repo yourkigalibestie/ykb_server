@@ -5,6 +5,13 @@ import {
     type StarterGuideSubcategories
 } from './starterGuideCategories.repository';
 
+type StarterGuideTranslation = {
+    language: 'en' | 'fr';
+    category: string;
+    description?: string | null;
+    subcategories?: StarterGuideSubcategories | null;
+};
+
 const isDbUnreachable = (err: unknown): boolean => {
     const anyErr = err as any;
     const code =
@@ -27,6 +34,25 @@ const normalizeGroup = (group: StarterGuideCategoryGroup | undefined): StarterGu
     return group ?? 'OTHERS';
 };
 
+const normalizeTranslations = (translations: StarterGuideTranslation[] | undefined): StarterGuideTranslation[] | null => {
+    if (!Array.isArray(translations)) return null;
+
+    const rows = translations
+        .map((row) => {
+            const language = row?.language === 'fr' ? 'fr' : 'en';
+            const category = typeof row?.category === 'string' ? row.category.trim() : '';
+            if (!category) return null;
+
+            const description = typeof row?.description === 'string' ? row.description.trim() || null : row?.description ?? null;
+            const subcategories = Array.isArray(row?.subcategories) ? normalizeSubcategories(row.subcategories) : row?.subcategories ?? null;
+
+            return { language, category, description, subcategories } as StarterGuideTranslation;
+        })
+        .filter((row): row is StarterGuideTranslation => Boolean(row));
+
+    return rows.length > 0 ? rows : null;
+};
+
 export const starterGuideCategoriesService = {
     list: async (filters?: { isStarterKit?: boolean }) => {
         try {
@@ -46,11 +72,13 @@ export const starterGuideCategoriesService = {
         imagePublicId?: string;
         isStarterKit?: boolean;
         allowProviderRegistration?: boolean;
+        translations?: StarterGuideTranslation[];
     }) => {
         try {
             const category = input.category.trim();
             const group = normalizeGroup(input.group);
             const subcategories = normalizeSubcategories(input.subcategories ?? []);
+            const translations = normalizeTranslations(input.translations);
             return await starterGuideCategoriesRepository.create({
                 category,
                 group,
@@ -59,7 +87,8 @@ export const starterGuideCategoriesService = {
                 imageUrl: input.imageUrl?.trim() || null,
                 imagePublicId: input.imagePublicId?.trim() || null,
                 isStarterKit: input.isStarterKit ?? true,
-                allowProviderRegistration: input.allowProviderRegistration ?? false
+                allowProviderRegistration: input.allowProviderRegistration ?? false,
+                translations
             });
         } catch (err) {
             if (isDbUnreachable(err)) {
@@ -80,6 +109,7 @@ export const starterGuideCategoriesService = {
             imagePublicId?: string;
             isStarterKit?: boolean;
             allowProviderRegistration?: boolean;
+            translations?: StarterGuideTranslation[];
         }
     ) => {
         try {
@@ -95,6 +125,7 @@ export const starterGuideCategoriesService = {
             if (typeof input.imagePublicId === 'string') data.imagePublicId = input.imagePublicId.trim() || null;
             if (typeof input.isStarterKit === 'boolean') data.isStarterKit = input.isStarterKit;
             if (typeof input.allowProviderRegistration === 'boolean') data.allowProviderRegistration = input.allowProviderRegistration;
+            if (Array.isArray(input.translations)) data.translations = normalizeTranslations(input.translations);
 
             return await starterGuideCategoriesRepository.updateById(id, data);
         } catch (err) {

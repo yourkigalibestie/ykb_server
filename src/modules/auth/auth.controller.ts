@@ -42,5 +42,23 @@ export const authController = {
         const { email, code } = req.validated?.body;
         await authService.verifyEmail(email, code);
         res.status(200).json({ message: 'Email verified successfully.' });
+    }),
+
+    sendResetCode: asyncHandler(async (req: Request, res: Response) => {
+        const { email } = req.validated?.body;
+        await authService.sendResetCode(email);
+        res.status(200).json({ message: 'If an account exists, a reset code has been sent.' });
+    }),
+
+    verifyResetCode: asyncHandler(async (req: Request, res: Response) => {
+        const { email, code } = req.validated?.body;
+        await authService.verifyResetCode(email, code);
+        res.status(200).json({ message: 'Code verified successfully.' });
+    }),
+
+    resetPasswordWithCode: asyncHandler(async (req: Request, res: Response) => {
+        const { email, code, password } = req.validated?.body;
+        await authService.resetPasswordWithCode(email, code, password);
+        res.status(200).json({ message: 'Password reset successfully.' });
     })
 };

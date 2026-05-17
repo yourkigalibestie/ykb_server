@@ -7,6 +7,13 @@ export const starterGuideCategoriesController = {
         const isStarterKit = req.query.isStarterKit ? req.query.isStarterKit === 'true' : undefined;
         const filters = isStarterKit !== undefined ? { isStarterKit } : undefined;
         const categories = await starterGuideCategoriesService.list(filters);
+
+        if (req.query.debug === 'true' && process.env.NODE_ENV !== 'production') {
+            const sample = Array.isArray(categories) && categories.length > 0 ? categories[0] : null;
+            // eslint-disable-next-line no-console
+            console.log('[starter-guide-categories] sample', sample);
+        }
+
         res.status(200).json(categories);
     }),
 

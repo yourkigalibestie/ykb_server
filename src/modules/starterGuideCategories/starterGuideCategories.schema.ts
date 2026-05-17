@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 const subcategoriesSchema = z.array(z.string().min(1)).default([]);
 const groupSchema = z.enum(['APP', 'INFRASTRUCTURE', 'OTHERS']);
+const translationSchema = z.object({
+    language: z.enum(['en', 'fr']),
+    category: z.string().min(1),
+    description: z.string().nullable().optional(),
+    subcategories: z.array(z.string().min(1)).nullable().optional()
+});
 
 export const createStarterGuideCategorySchema = z.object({
     body: z.object({
@@ -12,7 +18,8 @@ export const createStarterGuideCategorySchema = z.object({
         imageUrl: z.string().url().optional().or(z.literal('')),
         imagePublicId: z.string().optional(),
         isStarterKit: z.boolean().optional(),
-        allowProviderRegistration: z.boolean().optional()
+        allowProviderRegistration: z.boolean().optional(),
+        translations: z.array(translationSchema).optional()
     })
 });
 
@@ -33,7 +40,8 @@ export const updateStarterGuideCategorySchema = z.object({
             imageUrl: z.string().url().optional().or(z.literal('')),
             imagePublicId: z.string().optional(),
             isStarterKit: z.boolean().optional(),
-            allowProviderRegistration: z.boolean().optional()
+            allowProviderRegistration: z.boolean().optional(),
+            translations: z.array(translationSchema).optional()
         })
         .refine((val) => Object.keys(val).length > 0, { message: 'At least one field is required' })
 });
