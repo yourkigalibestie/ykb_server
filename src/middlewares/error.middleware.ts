@@ -72,10 +72,14 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
         // Example: P1001 (Can't reach database server)
         const code = (err as any).errorCode ?? 'DB_UNAVAILABLE';
         const status = code === 'P1001' ? 503 : 500;
+        const message =
+            code === 'P1001'
+                ? 'Database is temporarily unavailable. Please try again in a few minutes.'
+                : 'Database initialization failed. Please contact support.';
         return res.status(status).json({
             error: {
                 code: 'DB_UNAVAILABLE',
-                message: err.message
+                message
             }
         });
     }
