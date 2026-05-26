@@ -16,25 +16,15 @@ export const bookingsService = {
             throw new AppError('Only customers can create bookings', 403, 'FORBIDDEN');
         }
 
-        const service = await bookingsRepository.findServiceById(input.serviceId);
-        if (!service) throw new AppError('Service not found', 404, 'NOT_FOUND');
-
-        let providerId: string | null | undefined = null;
-
-        if (service.providerId) {
-            providerId = service.providerId;
-            if (input.providerId && input.providerId !== providerId) {
-                throw new AppError('providerId does not match the service provider', 400, 'VALIDATION_ERROR');
+        const providerId = input.providerId ?? null;
+        if (providerId) {
+            const provider = await bookingsRepository.findProviderById(providerId);
+            if (!provider) throw new AppError('Provider not found', 404, 'NOT_FOUND');
+            if (provider.status !== ProviderStatus.APPROVED) {
+                throw new AppError('Provider is not approved', 403, 'FORBIDDEN');
             }
         } else {
-            providerId = input.providerId ?? null;
-            if (providerId) {
-                const provider = await bookingsRepository.findProviderById(providerId);
-                if (!provider) throw new AppError('Provider not found', 404, 'NOT_FOUND');
-                if (provider.status !== ProviderStatus.APPROVED) {
-                    throw new AppError('Provider is not approved', 403, 'FORBIDDEN');
-                }
-            }
+            throw new AppError('Provider is required for bookings', 400, 'VALIDATION_ERROR');
         }
 
         const scheduledAt = new Date(input.date);

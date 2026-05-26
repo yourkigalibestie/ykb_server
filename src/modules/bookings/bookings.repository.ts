@@ -15,7 +15,6 @@ export const bookingsRepository = {
             include: {
                 customer: true,
                 provider: { include: { user: true } },
-                service: { include: { category: true } },
                 payment: true
             }
         });
@@ -27,7 +26,6 @@ export const bookingsRepository = {
             include: {
                 customer: true,
                 provider: { include: { user: true } },
-                service: { include: { category: true } },
                 payment: true,
                 review: true
             }
@@ -39,7 +37,6 @@ export const bookingsRepository = {
             where: { customerId },
             include: {
                 provider: { include: { user: true } },
-                service: { include: { category: true } },
                 payment: true
             },
             orderBy: { createdAt: 'desc' }
@@ -51,7 +48,6 @@ export const bookingsRepository = {
             where: { providerId },
             include: {
                 customer: true,
-                service: { include: { category: true } },
                 payment: true
             },
             orderBy: { createdAt: 'desc' }
@@ -63,7 +59,6 @@ export const bookingsRepository = {
             include: {
                 customer: true,
                 provider: { include: { user: true } },
-                service: { include: { category: true } },
                 payment: true
             },
             orderBy: { createdAt: 'desc' }
@@ -77,17 +72,9 @@ export const bookingsRepository = {
             include: {
                 customer: true,
                 provider: { include: { user: true } },
-                service: { include: { category: true } },
                 payment: true,
                 review: true
             }
-        });
-    },
-
-    findServiceById: async (serviceId: string) => {
-        return prisma.service.findUnique({
-            where: { id: serviceId },
-            include: { provider: true }
         });
     },
 

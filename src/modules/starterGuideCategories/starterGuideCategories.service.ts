@@ -21,7 +21,18 @@ const isDbUnreachable = (err: unknown): boolean => {
                 ? anyErr.errorCode
                 : '';
 
-    return code === 'P1001';
+    if (code === 'P1001') return true;
+
+    // PrismaClientInitializationError sometimes occurs when the DB is unreachable
+    // and doesn't expose a P1001 code. Detect by name or message heuristics.
+    if (anyErr?.name === 'PrismaClientInitializationError') return true;
+
+    const msg = typeof anyErr?.message === 'string' ? anyErr.message : '';
+    if (msg.includes("Can't reach database server") || msg.includes('connect ECONNREFUSED') || msg.includes('getaddrinfo ENOTFOUND')) {
+        return true;
+    }
+
+    return false;
 };
 
 const normalizeSubcategories = (subcategories: StarterGuideSubcategories): StarterGuideSubcategories => {
