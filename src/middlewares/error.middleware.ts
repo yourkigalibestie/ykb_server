@@ -3,6 +3,7 @@ import { ZodError } from 'zod';
 import { AppError } from '../utils/appError';
 import { Prisma } from '@prisma/client';
 
+
 const isPrismaKnownError = (err: unknown): err is Prisma.PrismaClientKnownRequestError => {
     return err instanceof Prisma.PrismaClientKnownRequestError;
 };
@@ -22,6 +23,11 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
     // Log full error for debugging in development
     // eslint-disable-next-line no-console
     console.error(err);
+    console.log('Error constructor:', err?.constructor?.name);
+console.log('Error object:', err);
+
+console.log('ERROR TYPE:', err?.constructor?.name);
+console.dir(err, { depth: null });
 
     if (err instanceof ZodError) {
         return res.status(400).json({
@@ -55,7 +61,7 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
             return res.status(503).json({
                 error: {
                     code: 'DB_UNAVAILABLE',
-                    message: 'Database connection pool is temporarily exhausted. Please try again.'
+                    message: 'Unknown error occured . Please try again.'
                 }
             });
         }
@@ -74,8 +80,8 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
         const status = code === 'P1001' ? 503 : 500;
         const message =
             code === 'P1001'
-                ? 'Database is temporarily unavailable. Please try again in a few minutes.'
-                : 'Database initialization failed. Please contact support.';
+                ? 'Error occured. Please try again in a few minutes.'
+                : 'Double chech your input data. Email already registered!.';
         return res.status(status).json({
             error: {
                 code: 'DB_UNAVAILABLE',

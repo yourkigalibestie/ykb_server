@@ -1,4 +1,5 @@
 #
+ssh root@104.207.67.246
 
 nano /etc/nginx/sites-available/kigalibespoke.com
 
@@ -27,6 +28,11 @@ rm -rf .[^.]* ..?* 2>/dev/null
  scp -r "D:\MP\AI\MBI\E-commerce\frontend\build\*" root@104.207.67.246:/var/www/E-commerce/frontend/
 
  scp -r "D:\MP\AI\Clients\Your_Kigali_Bestie\frontend\dist\*" root@104.207.67.246:/var/www/kigalibespoke-frontend/
+
+nano /etc/nginx/sites-available/kigalibespoke.com
+nginx -t
+systemctl reload nginx
+
 2. Backend Deployment:
 git pull
 
