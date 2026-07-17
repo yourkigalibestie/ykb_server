@@ -19,7 +19,7 @@ server {
 
 1. UI Deployment:
 -- deleting the folder contents before copying the new files
-cd /var/www/E-commerce/frontend
+cd /var/www/kigalibespoke-frontend
 rm -rf *
 rm -rf .[^.]* ..?* 2>/dev/null
 
