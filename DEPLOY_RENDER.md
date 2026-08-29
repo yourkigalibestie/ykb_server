@@ -57,6 +57,8 @@ Under the **Environment** tab in your Render service settings, add the following
 | `CLOUDINARY_API_KEY` | Cloudinary API Key | `your_api_key` |
 | `CLOUDINARY_API_SECRET` | Cloudinary API Secret | `your_api_secret` |
 | `PLATFORM_FEE_BPS` | Platform fee in basis points | `0` |
+| `CORS_ORIGIN` | Allowed CORS origins (wildcard or comma-separated) | `*` (or specific domain) |
+| `ALLOWED_ORIGINS` | Comma-separated list of allowed origins | `http://localhost:5173,https://kigalibespoke.com` |
 | `PESAPAY_CONSUMER_KEY` | Pesapal Consumer Key | Required for payments |
 | `PESAPAY_CONSUMER_SECRET` | Pesapal Consumer Secret | Required for payments |
 | `PESAPAY_BASE_URL` | Pesapal API Endpoint | `https://pay.pesapal.com/v3` or sandbox |

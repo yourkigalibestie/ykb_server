@@ -25,6 +25,8 @@ const envSchema = z.object({
     CLOUDINARY_API_KEY: z.string().min(1),
     CLOUDINARY_API_SECRET: z.string().min(1),
     PLATFORM_FEE_BPS: z.coerce.number().int().min(0).max(10_000).default(0),
+    CORS_ORIGIN: z.string().optional().default('*'),
+    ALLOWED_ORIGINS: z.string().optional(),
     PESAPAY_CONSUMER_KEY: z.string().min(1),
     PESAPAY_CONSUMER_SECRET: z.string().min(1),
     PESAPAY_BASE_URL: z.string().min(1),

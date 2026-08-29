@@ -29,6 +29,10 @@ services:
         sync: false
       - key: PLATFORM_FEE_BPS
         value: 0
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: ALLOWED_ORIGINS
+        sync: false
       - key: PESAPAY_CONSUMER_KEY
         sync: false
       - key: PESAPAY_CONSUMER_SECRET
