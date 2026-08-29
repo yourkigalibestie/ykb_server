@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: ykb-backend
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install && npm run prisma:deploy && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: PLATFORM_FEE_BPS
+        value: 0
+      - key: PESAPAY_CONSUMER_KEY
+        sync: false
+      - key: PESAPAY_CONSUMER_SECRET
+        sync: false
+      - key: PESAPAY_BASE_URL
+        sync: false
+      - key: PESAPAY_IPN_ID
+        sync: false
+      - key: PESAPAY_CALLBACK_URL
+        sync: false
